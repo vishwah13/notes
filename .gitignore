@@ -12,3 +12,6 @@ replit.nix
 .quartz/
 quartz/cli/tui/dist/
 .turbo/
+
+# The vault is cloned here at build time (see .github/workflows/deploy.yml)
+/content/

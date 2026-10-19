@@ -1,0 +1,58 @@
+name: Deploy notes to GitHub Pages
+
+# Content lives in the private repo vishwah13/obsidian-vault. Its own workflow sends a
+# `vault-updated` dispatch here on every push, so publishing is: write in Obsidian,
+# let obsidian-git push.
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [vault-updated]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Full history: Quartz reads each note's "modified" date from the vault's git log.
+      - name: Checkout vault into content/
+        uses: actions/checkout@v4
+        with:
+          repository: vishwah13/obsidian-vault
+          token: ${{ secrets.VAULT_TOKEN }}
+          path: content
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npx quartz plugin install
+      - run: npx quartz build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
