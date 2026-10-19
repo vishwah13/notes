@@ -17,6 +17,8 @@ configuration:
     - "**/Untitled*"
     # Studio take-home test solution; keep private
     - "**/Sumo Astroid test.md"
+    # Third-party papers; link to the source instead of hosting copies
+    - "**/*.pdf"
   theme:
     fontOrigin: googleFonts
     cdnCaching: true
